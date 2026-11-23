@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Gate Scanner</title>
+<link rel="stylesheet" href="/css/style.css" />
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <h1>📷 Gate Scanner</h1>
+  <div><a href="/warden.html" style="color:#93a0b8;">← back to dashboard</a></div>
+</header>
+<main>
+  <div class="card" style="text-align:center;">
+    <h2>Point camera at student's QR</h2>
+    <video id="video" style="width:100%; max-width:420px; border-radius:12px; border:1px solid #2a3247;" muted playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="result" style="margin-top:16px; font-size:16px; font-weight:600;"></div>
+    <div class="small-muted" id="statusLine" style="margin-top:6px;">Starting camera…</div>
+  </div>
+</main>
+
+<script src="/js/common.js"></script>
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const resultEl = document.getElementById("result");
+  const statusEl = document.getElementById("statusLine");
+
+  let lastCode = null;
+  let cooldownUntil = 0;
+
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      video.srcObject = stream;
+      await video.play();
+      statusEl.textContent = "Camera live — scanning…";
+      requestAnimationFrame(tick);
+    } catch (e) {
+      statusEl.textContent = "Could not access camera. You can still test via the warden dashboard's paste-token box.";
+    }
+  }
+
+  function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code && code.data && Date.now() > cooldownUntil) {
+        // Same code held in frame: wait 8s so a static ID QR can't be re-processed.
+        if (code.data === lastCode && Date.now() < cooldownUntil + 6000) { requestAnimationFrame(tick); return; }
+        lastCode = code.data;
+        handleToken(code.data);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  async function handleToken(token) {
+    cooldownUntil = Date.now() + 2000; // avoid re-scanning same frame repeatedly
+    try {
+      const data = await API.call("/api/scan", { method: "POST", body: { token } });
+      if (data.type === "return") {
+        resultEl.style.color = data.late ? "#f0a030" : "#38c172";
+        resultEl.textContent = data.late
+          ? `⚠️ RETURNED LATE — ${data.student} (${data.late_minutes} min overdue)`
+          : `🏠 RETURNED ON TIME — ${data.student}`;
+      } else {
+        resultEl.style.color = "#38c172";
+        resultEl.textContent = `✅ ACCEPTED — ${data.student} → ${data.destination}`;
+      }
+    } catch (e) {
+      resultEl.style.color = "#ef5757";
+      resultEl.textContent = `❌ REJECTED — ${e.data?.reason || "invalid"}`;
+    }
+  }
+
+  startCamera();
+</script>
+</body>
+</html>

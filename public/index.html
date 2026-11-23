@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hostel Gate — Login</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="login-wrap">
+  <div class="card login-card">
+    <h2 id="title">Hostel Access Login</h2>
+    <div class="role-tabs">
+      <button data-role="student" class="active">Student</button>
+      <button data-role="warden">Warden</button>
+      <button data-role="parent">Parent</button>
+      <button data-role="admin">Admin</button>
+    </div>
+
+    <form id="authForm" novalidate>
+      <div id="regOnly" style="display:none">
+        <label>Full name</label>
+        <input id="name" autocomplete="name" />
+        <label>Phone (optional)</label>
+        <input id="phone" type="tel" autocomplete="tel" />
+      </div>
+
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
+
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Min 8 characters" autocomplete="current-password" />
+
+      <div id="regConfirm" style="display:none">
+        <label>Confirm password</label>
+        <input id="password2" type="password" autocomplete="new-password" />
+      </div>
+
+      <div id="parentOnly" style="display:none">
+        <label>Your child's (student) registered email</label>
+        <input id="studentEmail" type="email" placeholder="student@example.com" />
+      </div>
+
+      <div id="staffOnly" style="display:none">
+        <label>Invite code</label>
+        <input id="inviteCode" placeholder="Given by the hostel office" />
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <button id="submitBtn" type="submit" style="flex:1">Log in</button>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+    </form>
+
+    <div class="hint" style="text-align:center">
+      <span id="switchText">New here?</span>
+      <a href="#" id="switchLink">Register</a>
+    </div>
+
+    <div class="hint" id="demoHint">
+      <b>Demo accounts</b> (after <code>npm run seed</code>):<br/>
+      Student: stu001@hostel.test / 11111111<br/>
+      Warden: wrd01@hostel.test / 55555555<br/>
+      Parent: par001@hostel.test / 66666666<br/>
+      Admin: adm01@hostel.test / 99999999
+    </div>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script>
+  let selectedRole = "student";
+  let mode = "login"; // or "register"
+  const $ = (id) => document.getElementById(id);
+  const dest = { student: "student.html", warden: "warden.html", parent: "parent.html", admin: "admin.html" };
+  const errors = {
+    invalid_credentials: "Invalid email or password.",
+    email_taken: "An account with this email already exists.",
+    invalid_email: "Enter a valid email address.",
+    password_too_short: "Password must be at least 8 characters.",
+    name_required: "Enter your full name.",
+    student_not_found: "No student account found with that email. The student must register first.",
+    student_already_has_parent: "That student already has a parent account linked.",
+    invalid_invite_code: "Invalid invite code.",
+  };
+
+  function render() {
+    const reg = mode === "register";
+    $("title").textContent = reg ? "Create " + selectedRole + " account" : "Hostel Access Login";
+    $("regOnly").style.display = reg ? "" : "none";
+    $("regConfirm").style.display = reg ? "" : "none";
+    $("parentOnly").style.display = reg && selectedRole === "parent" ? "" : "none";
+    $("staffOnly").style.display = reg && (selectedRole === "warden" || selectedRole === "admin") ? "" : "none";
+    $("submitBtn").textContent = reg ? "Register" : "Log in";
+    $("switchText").textContent = reg ? "Already have an account?" : "New here?";
+    $("switchLink").textContent = reg ? "Log in" : "Register";
+    $("password").autocomplete = reg ? "new-password" : "current-password";
+    $("demoHint").style.display = reg ? "none" : "";
+    $("errorMsg").textContent = "";
+  }
+
+  document.querySelectorAll(".role-tabs button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".role-tabs button").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedRole = btn.dataset.role;
+      render();
+    });
+  });
+  $("switchLink").addEventListener("click", (e) => { e.preventDefault(); mode = mode === "login" ? "register" : "login"; render(); });
+
+  async function submit(e) {
+    e.preventDefault();
+    const errEl = $("errorMsg");
+    errEl.textContent = "";
+    const email = $("email").value.trim(), password = $("password").value;
+    if (!email || !password) { errEl.textContent = "Enter email and password."; return; }
+
+    try {
+      let data;
+      if (mode === "register") {
+        if (password !== $("password2").value) { errEl.textContent = "Passwords do not match."; return; }
+        data = await API.call("/api/register", { method: "POST", body: {
+          role: selectedRole, name: $("name").value, phone: $("phone").value, email, password,
+          student_email: $("studentEmail").value, invite_code: $("inviteCode").value,
+        }});
+      } else {
+        data = await API.call("/api/login", { method: "POST", body: { email, password } });
+        if (data.role !== selectedRole) {
+          errEl.textContent = `That email belongs to a ${data.role} account, not ${selectedRole}. Select the correct tab.`;
+          return;
+        }
+      }
+      localStorage.setItem("hqr_token", data.token);
+      localStorage.setItem("hqr_session", JSON.stringify(data));
+      window.location.href = dest[data.role];
+    } catch (err) {
+      errEl.textContent = errors[err.message] || "Something went wrong. Try again.";
+    }
+  }
+  $("authForm").addEventListener("submit", submit);
+  render();
+</script>
+</body>
+</html>

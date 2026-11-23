@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Parent — Hostel Gate</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>👪 Parent Dashboard</h1>
+  <div>
+    <span class="who" id="whoami"></span>
+    <button class="logout" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Awaiting Your Approval</h2>
+    <div id="pendingTable"><div class="empty">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Your Child's Requests</h2>
+    <div id="allTable"><div class="empty">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Notifications</h2>
+    <div id="notifBox"><div class="empty">Loading…</div></div>
+  </div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/parent.js"></script>
+</body>
+</html>

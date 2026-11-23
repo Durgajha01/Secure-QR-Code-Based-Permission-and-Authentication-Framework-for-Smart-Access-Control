@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Warden — Hostel Gate</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>🛡️ Warden Dashboard</h1>
+  <div>
+    <span class="who" id="whoami"></span>
+    <button class="logout" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Pending Your Approval</h2>
+    <div id="pendingTable"><div class="empty">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>All Requests</h2>
+    <div id="allTable"><div class="empty">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Gate Scanner (test tool)</h2>
+    <p class="small-muted">Paste a scanned QR token here to simulate the gate device, or open <a href="/scanner.html" style="color:#5b8cff;">the camera scanner page</a>.</p>
+    <textarea id="scanInput" placeholder="Paste QR token / payload"></textarea>
+    <div class="row" style="margin-top:10px;">
+      <button id="scanBtn">Verify & Scan</button>
+    </div>
+    <div id="scanResult" class="small-muted" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>Notifications</h2>
+    <div id="notifBox"><div class="empty">Loading…</div></div>
+  </div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/warden.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Student — Hostel Gate</title>
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <h1>🎓 Student Dashboard</h1>
+  <div>
+    <span class="who" id="whoami"></span>
+    <button class="logout" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>New Outing Request</h2>
+    <label>Purpose</label>
+    <input id="purpose" placeholder="e.g. Grocery shopping" />
+    <label>Destination</label>
+    <input id="destination" placeholder="e.g. City Mall" />
+    <label>Planned exit time</label>
+    <input id="exitTime" type="datetime-local" />
+    <label>Expected duration (minutes)</label>
+    <input id="duration" type="number" value="120" min="10" />
+    <div class="row" style="margin-top:14px;">
+      <button id="submitBtn">Submit Request</button>
+    </div>
+    <div class="error-msg" id="formMsg"></div>
+  </div>
+
+  <div class="card" id="activeQrCard" style="display:none;">
+    <h2>Your Active Gate Pass</h2>
+    <div style="text-align:center;">
+      <div class="qr-box"><img id="qrImg" src="" alt="QR code" /></div>
+      <div class="qr-meta" id="qrMeta">Rotates every 30 seconds — the gate only accepts the latest code.</div>
+      <div style="margin-top:16px;">
+        <button class="sos" id="sosBtn">🚨 SOS / Check-in</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>My Gate ID</h2>
+    <div style="text-align:center;">
+      <div class="qr-box"><img id="idQrImg" alt="Student ID QR" /></div>
+      <div class="qr-meta">Show this at the gate when you come back. It never changes.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>My Requests</h2>
+    <div id="requestsTable"><div class="empty">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Notifications</h2>
+    <div id="notifBox"><div class="empty">Loading…</div></div>
+  </div>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/student.js"></script>
+</body>
+</html>
