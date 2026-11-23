@@ -11,6 +11,11 @@ approve → parent approve → QR generated → QR scanned by an independent
 decoder → gate accepts it once, rejects the replay) before being handed to
 you.
 
+DEMO 
+
+https://github.com/user-attachments/assets/a5249667-ce8b-4e0b-9c8b-08356b7d512f
+
+
 ## Stack
 - **Backend:** Node.js + Express + `better-sqlite3` (file-based SQL database,
   `backend/hostel.db`, created automatically). No external services (no
